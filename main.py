@@ -13,12 +13,12 @@ def main():
         print('invalid arg')
         return 1
     code_path = Path(sys.argv[1])
-    with open(code_path, 'r') as file:
+    with open(code_path, 'r', encoding="utf-8") as file:
         code = file.read()
     obfuscated_code = CSharpObfuscator(code).obfuscate()
     if not os.path.exists('result'):
         os.mkdir('result')
-    with open(f'result/{code_path.name}', 'w') as file:
+    with open(f'result/{code_path.name}', 'w', encoding="utf-8") as file:
         file.write(obfuscated_code)
 
 
