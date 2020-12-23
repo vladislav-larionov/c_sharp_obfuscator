@@ -9,7 +9,7 @@ class CSharpObfuscator:
     NEW_CLASS_NAME_TEMPLATE = 'mcSegwbdMjF2exgt'
     COMMENT_SEARCH_PATTERN = r'(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/)|(//.*)'
     KEY_WORDS_SEARCH_PATTERN = re.compile(
-        r'(?<=(\s))|(?<=(\())|(?<=(^))(abstract|as|base|bool|break|byte|case|catch|char|checked|class|const|continue|decimal|default|delegate|do|double|else|enum|event|explicit|extern|false|finally|fixed|float|for|foreach|goto|if|implicit|in|int|interface|internal|is|lock|long|namespace|new|null|object|operator|out|override|params|private|protected|public|readonly|ref|return|sbyte|sealed|short|sizeof|stackalloc|static|string|struct|switch|this|throw|true|try|typeof|uint|ulong|unchecked|unsafe|ushort|using|var|virtual|void|volatile|while)(?=(\s|%space))')
+        r'(abstract|as|base|bool|break|byte|case|catch|char|checked|class|const|continue|decimal|default|delegate|do|double|else|enum|event|explicit|extern|false|finally|fixed|float|for|foreach|goto|if|implicit|in|int|interface|internal|is|lock|long|namespace|new|null|object|operator|out|override|params|private|protected|public|readonly|ref|return|sbyte|sealed|short|sizeof|stackalloc|static|string|struct|switch|this|throw|true|try|typeof|uint|ulong|unchecked|unsafe|ushort|using|var|virtual|void|volatile|while)(?=\s)')
     METHOD_NAME_PATTERN = re.compile(
         "((?<=public|unsafe|static|extern)|(?<=internal)|(?<=protected)|(?<=async)|(?<=private))\s+[a-zA-Z0-9_\[\]]*(\s*[A-Za-z_][A-Za-z_0-9]*\s*)")
     METHOD_PATTERN = re.compile("((public|unsafe|static|extern)|(?<=internal)|(?<=protected)|(?<=async)|(?<=private))\s+[a-zA-Z0-9_\[\]]*(\s*[A-Za-z_][A-Za-z_0-9]*\s*)")
@@ -17,9 +17,12 @@ class CSharpObfuscator:
     CLASS_REPLACE_PATTERN = '{0}(?=(\\.|>|\\(| ))'
     VARIABLE_DEFINITION_PATTERN = "[a-zA-Z_0-9><\[\]]+\s[a-zA-Z0-9><_]+\s+=(?!=)"
     VARIABLE_IN_LOOP_DEFINITION_PATTERN = "[a-zA-Z_0-9><\[\]]+\s[a-zA-Z0-9><_]+\s+in(?!=)"
-    NAMESPACES_SEARCH_PATTERN = "(?<=namespace)\s+[A-Za-z0-9_]+"
+    NAMESPACES_SEARCH_PATTERN = "namespace\s+[A-Za-z0-9_]+"
+    NAMESPACES_REPLACE_PATTERN = 'namespace {0}'
     CLASS_DEFINITION_PATTERN = '(?<=class\s)\s*{0}'
     CLASS_NAME_SEARCH_PATTERN = '(?<=class\s)\s*[A-Za-z0-9_]+'
+    TO_REMOVE_SPACES_VARIABLE_DEFINITION_PATTERN = "([a-zA-Z_0-9><\[\]]+\s[a-zA-Z0-9><_]+\s+)(?==)"
+    TO_REMOVE_SPACES_VARIABLE_DEFINITION_IN_LOOP_PATTERN = "([a-zA-Z_0-9><\[\]]+\s[a-zA-Z0-9><_]+\s+)in(?!=)"
 
     def __init__(self, code):
         self.code = code
@@ -36,16 +39,22 @@ class CSharpObfuscator:
         self.__rename_namespaces()
         self.__rename_classes()
         self.__remove_spaces()
-        self.__remove_line_breaks()
         return self.code
 
     def __remove_comments(self):
         self.code = re.sub(self.COMMENT_SEARCH_PATTERN, '', self.code)
 
     def __remove_spaces(self):
-        self.code = re.sub(self.KEY_WORDS_SEARCH_PATTERN, r"%space \4%space ", self.code)
-        self.code = re.sub(r'[ ]+', '', self.code)
-        self.code = re.sub(r'[\t]+', '', self.code)
+        var_definitions = re.findall(self.TO_REMOVE_SPACES_VARIABLE_DEFINITION_PATTERN, self.code)
+        var_definitions.extend(re.findall(self.TO_REMOVE_SPACES_VARIABLE_DEFINITION_IN_LOOP_PATTERN, self.code))
+        for var_definition in var_definitions:
+            with_no_spaces = re.sub('[ ]+', '%space', var_definition.strip())
+            self.code = self.code.replace(var_definition, with_no_spaces)
+        self.code = re.sub(self.KEY_WORDS_SEARCH_PATTERN, r"%space\1%space", self.code)
+        for string in re.findall(r"\".+\"", self.code):
+            with_no_spaces = string.replace(' ', '%space')
+            self.code = self.code.replace(string, with_no_spaces)
+        self.code = re.sub(r'[\s]+', '', self.code)
         self.code = re.sub(r'(%space)+', ' ', self.code)
 
     def __rename_methods(self):
@@ -107,14 +116,12 @@ class CSharpObfuscator:
         new_code += self.code[all_method_borders[-1][1]:]
         self.code = new_code
 
-    def __remove_line_breaks(self):
-        self.code = re.sub('\n', '', self.code)
-
     def __rename_namespaces(self):
         namespace_names = re.findall(self.NAMESPACES_SEARCH_PATTERN, self.code)
         namespace_name_dict = dict()
         for index, namespace in enumerate(namespace_names):
-            namespace_name_dict[namespace.strip()] = f"{self.NEW_NAMESPACE_NAME_TEMPLATE}{self.namespaces_count}"
+            namespace_name_dict[namespace.strip()] = \
+                self.NAMESPACES_REPLACE_PATTERN.format(f"{self.NEW_NAMESPACE_NAME_TEMPLATE}{self.namespaces_count}")
             self.namespaces_count += 1
         for old_namespace_name, new_namespace_name in namespace_name_dict.items():
             self.code = re.sub(old_namespace_name, new_namespace_name, self.code)
