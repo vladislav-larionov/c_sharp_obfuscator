@@ -1,4 +1,3 @@
-import random
 import re
 
 
@@ -9,10 +8,18 @@ class CSharpObfuscator:
     NEW_CLASS_NAME_TEMPLATE = 'mcSegwbdMjF2exgt'
     COMMENT_SEARCH_PATTERN = r'(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/)|(//.*)'
     KEY_WORDS_SEARCH_PATTERN = re.compile(
-        r'(abstract|as|base|bool|break|byte|case|catch|char|checked|class|const|continue|decimal|default|delegate|do|double|else|enum|event|explicit|extern|false|finally|fixed|float|for|foreach|goto|if|implicit|in|int|interface|internal|is|lock|long|namespace|new|null|object|operator|out|override|params|private|protected|public|readonly|ref|return|sbyte|sealed|short|sizeof|stackalloc|static|string|struct|switch|this|throw|true|try|typeof|uint|ulong|unchecked|unsafe|ushort|using|var|virtual|void|volatile|while)(?=\s)')
+        r'(abstract|as|base|bool|break|byte|case|catch|char|checked|class|const|continue|decimal'
+        r'|default|delegate|do|double|else|enum|event|explicit|extern|false|finally|fixed|float|for'
+        r'|foreach|goto|if|implicit|in|int|interface|internal|is|lock|long|namespace|new|null|object|'
+        r'operator|out|override|params|private|protected|public|readonly|ref|return|sbyte|sealed|short|'
+        r'sizeof|stackalloc|static|string|struct|switch|this|throw|true|try|typeof|uint|ulong|unchecked|'
+        r'unsafe|ushort|using|var|virtual|void|volatile|while)(?=\s)')
     METHOD_NAME_PATTERN = re.compile(
-        "((?<=public|unsafe|static|extern)|(?<=internal)|(?<=protected)|(?<=async)|(?<=private))\s+[a-zA-Z0-9_\[\]]*(\s*[A-Za-z_][A-Za-z_0-9]*\s*)")
-    METHOD_PATTERN = re.compile("((public|unsafe|static|extern)|(?<=internal)|(?<=protected)|(?<=async)|(?<=private))\s+[a-zA-Z0-9_\[\]]*(\s*[A-Za-z_][A-Za-z_0-9]*\s*)")
+        "((?<=public|unsafe|static|extern)|(?<=internal)|(?<=protected)|(?<=async)|(?<=private))\s+"
+        "[a-zA-Z0-9_\[\]]*(\s*[A-Za-z_][A-Za-z_0-9]*\s*)")
+    METHOD_PATTERN = re.compile(
+        "((public|unsafe|static|extern)|(?<=internal)|(?<=protected)|(?<=async)|(?<=private))\s+"
+        "[a-zA-Z0-9_\[\]]*(\s*[A-Za-z_][A-Za-z_0-9]*\s*)")
     PARAMETER_REPLACE_PATTERN = "(?<=[\. =+*/\-,;()\]\[]){0}(?=[ =+*/\-\.,;()\]\[])"
     CLASS_REPLACE_PATTERN = '{0}(?=(\\.|>|\\(| ))'
     VARIABLE_DEFINITION_PATTERN = "[a-zA-Z_0-9><\[\]]+\s[a-zA-Z0-9><_]+\s+=(?!=)"
