@@ -12,7 +12,7 @@ namespace qsort
     class NotAndSort
     {
         //метод для обмена элементов массива
-        static void Swap(ref int x, ref int y)
+        public static void Swap(ref int x, ref int y)
         {
             var t = x;
             x = y;
@@ -20,7 +20,7 @@ namespace qsort
         }
 
         //метод возвращающий индекс опорного элемента
-        static int Partition(int[] array, int minIndex, int maxIndex)
+       public static int Partition(int[] array, int minIndex, int maxIndex)
         {
             var pivot = minIndex - 1;
             for (var i = minIndex; i < maxIndex; i++)
@@ -38,7 +38,7 @@ namespace qsort
         }
 
         //быстрая сортировка
-        static int[] QuickSort(int[] array, int minIndex, int maxIndex)
+        public static int[] QuickSort(int[] array, int minIndex, int maxIndex)
         {
             if (minIndex >= maxIndex)
             {
@@ -52,7 +52,7 @@ namespace qsort
             return array;
         }
 
-        static int[] QuickSort(int[] array)
+        public static int[] QuickSort(int[] array)
         {
             return QuickSort(array, 0, array.Length - 1);
         }
